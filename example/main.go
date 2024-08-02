@@ -1,10 +1,10 @@
 package main
 
 import (
-	htlogging "ht-logging"
-	logging "ht-logging"
 	"log"
 	"os"
+
+	logging "github.com/Valdenirmezadri/ht-logging"
 )
 
 func main() {
@@ -12,13 +12,13 @@ func main() {
 		`%{time:Jan 02 2006 15:04:05} %{shortfile} ▶ %{level:.4s} %{message}`,
 	)
 
-	formatConsole := htlogging.MustStringFormatter(
+	formatConsole := logging.MustStringFormatter(
 		`%{color}%{time:15:04:05.000} %{shortfile} ▶ %{level:.4s} %{color:reset}%{message}`,
 	)
-	console := htlogging.NewLogBackend(os.Stderr, "", 0)
-	consoleFormatter := htlogging.NewBackendFormatter(console, formatConsole)
+	console := logging.NewLogBackend(os.Stderr, "", 0)
+	consoleFormatter := logging.NewBackendFormatter(console, formatConsole)
 
-	hlog, err := htlogging.New("debug", consoleFormatter)
+	hlog, err := logging.New("debug", consoleFormatter)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,7 +37,7 @@ func main() {
 
 	writer := logging.NewLogBackend(file, "", 0)
 	fileFromatter := logging.NewBackendFormatter(writer, formatFile)
-	logfile, err := htlogging.New("debug", fileFromatter)
+	logfile, err := logging.New("debug", fileFromatter)
 	if err != nil {
 		log.Fatal(err)
 	}
