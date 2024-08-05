@@ -18,16 +18,6 @@ func main() {
 	console := logging.NewLogBackend(os.Stderr, "", 0)
 	consoleFormatter := logging.NewBackendFormatter(console, formatConsole)
 
-	hlog, err := logging.New("debug", consoleFormatter)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	hlog.SetLevel("DEBUG")
-
-	hlog.Debugf("debug %s", "arg")
-	hlog.Error("error")
-
 	file, err := os.OpenFile("teste.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
 		log.Fatal(err)
@@ -41,6 +31,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	hlog, err := logging.New("debug", consoleFormatter, fileFromatter)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	hlog.SetLevel("DEBUG")
+
+	hlog.Debugf("debug %s", "arg")
+	hlog.Error("error")
 
 	logfile.SetLevel("DEBUG")
 

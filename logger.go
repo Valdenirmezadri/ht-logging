@@ -13,7 +13,7 @@ import (
 // Logger is the actual logger which creates log records based on the functions
 // called and passes them to the underlying logging backend.
 type logger struct {
-	backend LeveledBackend
+	backends safe.Item[[]LeveledBackend]
 	// Sequence number is incremented and utilized for all log records created.
 	sequenceNo uint64
 	// timeNow is a customizable for testing purposes.
@@ -78,26 +78,51 @@ type Logger interface {
 	SetLevel(string)
 }
 
-func New(lv string, backend Backend) (Logger, error) {
+func New(lv string, backends ...Backend) (Logger, error) {
+	if len(backends) == 0 {
+		return nil, fmt.Errorf("need at least one backend")
+	}
+
+	logger := &logger{
+		backends: safe.NewItem[[]LeveledBackend](),
+		timeNow:  time.Now,
+	}
+
+	logger.prepareBackends(lv, backends)
+
+	return logger, nil
+}
+
+func (l *logger) prepareBackends(lv string, backends []Backend) {
+	var list []LeveledBackend
+	for _, backend := range backends {
+		list = append(list, l.prepareBackend(lv, backend))
+	}
+
+	l.backends.Set(list)
+}
+
+func (l logger) prepareBackend(lv string, backend Backend) (leveled LeveledBackend) {
 	var level Level
-	var leveled LeveledBackend
-	var ok bool
-	if leveled, ok = backend.(LeveledBackend); !ok {
+	leveled, ok := backend.(LeveledBackend)
+	if !ok {
 		leveled = &moduleLeveled{
 			level:   safe.NewItemWithData(level.New(lv)),
 			backend: backend,
 		}
 	}
 
-	return &logger{
-		backend: leveled,
-		timeNow: time.Now,
-	}, nil
-
+	return leveled
 }
 
 func (l *logger) SetLevel(lv string) {
-	l.backend.SetLevel(lv)
+	l.backends.Update(func(lb []LeveledBackend) error {
+		for _, item := range lb {
+			item.SetLevel(lv)
+		}
+
+		return nil
+	})
 }
 
 func (l *logger) log(lvl Level, format *string, args ...interface{}) {
@@ -109,7 +134,9 @@ func (l *logger) log(lvl Level, format *string, args ...interface{}) {
 		Args:  args,
 	}
 
-	l.backend.Log(lvl, 2+l.ExtraCalldepth, record)
+	for _, backend := range l.backends.Get() {
+		backend.Log(lvl, 2+l.ExtraCalldepth, record)
+	}
 }
 
 // Fatal is equivalent to l.Critical(fmt.Sprint()) followed by a call to os.Exit(1).
