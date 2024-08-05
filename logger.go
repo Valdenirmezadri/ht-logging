@@ -135,7 +135,10 @@ func (l *logger) log(lvl Level, format *string, args ...interface{}) {
 	}
 
 	for _, backend := range l.backends.Get() {
-		backend.Log(lvl, 2+l.ExtraCalldepth, record)
+		blv := backend.GetLevel()
+		if blv >= lvl {
+			backend.Log(lvl, 2+l.ExtraCalldepth, record)
+		}
 	}
 }
 
