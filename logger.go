@@ -73,7 +73,7 @@ type Logger interface {
 	// Debugf logs a message using DEBUG as log level.
 	Debugf(format string, args ...interface{})
 
-	//Sub(module string) waLog.Logger
+	Sub(module string) waLog.Logger
 
 	SetLevel(string)
 }
