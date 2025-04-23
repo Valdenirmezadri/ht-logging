@@ -116,12 +116,15 @@ func (l logger) prepareBackend(lv string, backend Backend) (leveled LeveledBacke
 }
 
 func (l *logger) SetLevel(lv string) {
-	l.backends.Update(func(lb []LeveledBackend) error {
-		for _, item := range lb {
+	l.backends.Update(func(lb []LeveledBackend) []LeveledBackend {
+		list := make([]LeveledBackend, len(lb))
+		for k := range lb {
+			item := lb[k]
 			item.SetLevel(lv)
+			list[k] = item
 		}
 
-		return nil
+		return list
 	})
 }
 
