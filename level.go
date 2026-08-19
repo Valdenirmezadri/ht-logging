@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Valdenirmezadri/core-go/safe"
+	"github.com/Valdenirmezadri/core-go/v2/safe"
 )
 
 // ErrInvalidLogLevel is used when an invalid log level has been used.

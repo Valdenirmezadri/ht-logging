@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Valdenirmezadri/core-go/safe"
+	"github.com/Valdenirmezadri/core-go/v2/safe"
 	waLog "go.mau.fi/whatsmeow/util/log"
 )
 
@@ -240,4 +240,10 @@ func (l *logger) Debugf(format string, args ...interface{}) {
 
 func (l *logger) Sub(module string) waLog.Logger {
 	return l
+}
+
+// AddCalldepth increases the call depth by n.
+// Use this when wrapping the logger to ensure the correct source file is reported.
+func (l *logger) AddCalldepth(n int) {
+	l.ExtraCalldepth += n
 }
